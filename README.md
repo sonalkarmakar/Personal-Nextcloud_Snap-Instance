@@ -24,6 +24,8 @@ This is a documentation about how I created a personal Nextcloud instance using 
 
 - Selected the preferred region from the Oracle Cloud web interface.
 
+- Mounted the storage block for storing the uploaded files and data at "_`/var/snap/nextcloud/common/nextcloud/data/`_", the default storage location.
+
 ## Creating Nextcloud Instance
 The sections below describe different stages of creating the Nextcloud instance in sequence as required.
 
@@ -49,56 +51,56 @@ The sections below describe different stages of creating the Nextcloud instance 
 > [!NOTE]  
 > Difference between _`upgrade`_ and _`dist-upgrade`_:
 > - `upgrade` only upgrades the versions of installed packages but NEVER uninstalls or removes anything.  
-> - `dist-upgrade` upgrades everything in the system, cleans up older versions and their dependencies, and upgrades the OS and kernel versions.  
+> - `dist-upgrade` upgrades everything in the system, cleans up older versions and their dependencies, and upgrades the kernel versions.  
 >   
-> Basically, use `upgrade` for only upgrading the installed packages, use `dist-upgrade` to upgrade everything (including OS and kernel) to newer versions and remove old ones.  
+> Basically, use `upgrade` for only upgrading the installed packages, use `dist-upgrade` to upgrade everything (including kernel) to newer versions and remove old ones.  
 
 #### Hardening Security
-- Create a **non-root user** for administration with `sudo` privileges.
-	- Creating the user.
+- <ins>**Step 1:**</ins> Created a **non-root user** for administration with `sudo` privileges.
+	- Created the user.
 		```sh
 		useradd <nextcloud-admin-username>
 		```
-	- Providing `sudo` privileges.
+	- Provided `sudo` privileges.
 		```sh
 		usermod -aG sudo <nextcloud-admin-username>
 		```
-- Establish a new SSH connection for the Nextcloud admin user.
-	- Generating SSH key-pair in local machine.
+- <ins>**Step 2:**</ins> Established a new SSH connection for the Nextcloud admin user.
+	- Generated SSH key-pair in local machine.
 		```sh
 		ssh-keygen
 		```
-	- Following steps to [create local connection to instance](https://docs.oracle.com/en-us/iaas/Content/Compute/References/serialconsole.htm#creating-instance-connection-local).
+	- Followed steps to [create local connection to instance](https://docs.oracle.com/en-us/iaas/Content/Compute/References/serialconsole.htm#creating-instance-connection-local).
 	- Login using the new SSH key
 		```sh
 		ssh -i /path/to/private-key-file <nextcloud-admin-username>@<instance-public-IP-addr>
 		```
-- Tighten up SSH access
-	- Open the file "**/etc/ssh/sshd_config**" for editing with `sudo` privilege.
+- <ins>**Step 3:**</ins> Tightened up SSH access
+	- Opened the file "_`/etc/ssh/sshd_config`_" for editing with `sudo` privilege.
 		```sh
 		sudo nano /etc/ssh/sshd_config # use your preferred text editor
 		```
-	- Change SSH port to custom port.
+	- Changed SSH port to custom port.
 		```sh
 		# Port 22 # leave original entry as comment
 		Port <custom-port>
 		```
-	- Disable root login.
+	- Disabled root login.
 		```sh
 		# PermitRootLogin <old-value> # leave original entry as comment
 		PermitRootLogin no
 		```
-	- Disable password login
+	- Disabled password login
 		```sh
 		# PasswordAuthentication yes # leave original entry as comment
 		PasswordAuthentication no
 		```
-	- Save the edits made to the file `/etc/ssh/sshd_config`.
-	- Restart the SSH service daemon
+	- Saved the edits made to the file `/etc/ssh/sshd_config`.
+	- Restarted the SSH service daemon
 		```sh
 		sudo systemctl restart sshd.service
 		```
-	- _Without disconnecting current SSH connection_, test the configuration chages through a new session
+	- _Without disconnecting current SSH connection_, tested the configuration chages through a new session
 		```sh
 		ssh -i /path/to/private-key-file <nextcloud-admin-username>@<instance-public-IP-addr> # should fail to connect
 		ssh -i /path/to/private-key-file -p <custom-SSH-port> <instance-public-IP-addr> # should connect
@@ -106,8 +108,57 @@ The sections below describe different stages of creating the Nextcloud instance 
 
 > [!WARNING]  
 > If the SSH configurations are somehow incorrect, you can <font style="color: crimson; font-weight: bold; font-style: italic">permanently lose access</font> to the instance.  
-> In case of lost access to compute instance, either create new instance, or consult the Oracle Cloud support and forums for workarounds.  
+> In case of access loss to compute instance, either create new instance, or consult the Oracle Cloud support and forums for workarounds.  
 
-- Configure firewall for limiting access
+- <ins>**Step 4:**</ins> Limiting network access
+	- Checked port usage by different processes
+		```sh
+		netstat -plunt
+		ss -plunt # if netstat isn't installed
+		```
+	- Investigated the output from `netstat` or `ss` and uninstall/stop the unwanted/unnecessary processes.
+	- Installed Uncomplicated Firewall (UFW)
+		```sh
+		sudo apt install -y ufw
+		```
+	- Allowed ports for SSH, HTTP and HTTPS
+		```sh
+		sudo ufw allow <custom-ssh-port>
+		sudo ufw allow 80/tcp
+		sudo ufw allow 443/tcp
+		```
+	- Disabled `ping` response
+		- Added the entry below to the file "_`/etc/ufw/before.rules`_" with your preferred text editor.
+			```sh
+			-A ufw-before-input -p icmp --icmp-type echo-request -j DROP
+			```
+		- Added the entry below to the file "_`/etc/ufw/before6.rules`_" with your preferred text editor.
+			```sh
+			-A ufw6-before-input -p icmpv6 --icmpv6-type echo-request -j DROP
+			```
+	- Enabled and verify UFW configuration
+		```sh
+		sudo ufw enable
+		sudo ufw status
+		```
 
-- [Optional] Enable automatic updates
+- [Optional] <ins>**Step 5:**</ins> Enable automatic updates for stable packages
+	- Installed Unattanded Upgrades pacakge
+		```sh
+		sudo apt install -y unattended-upgrades
+		```
+	- Enabled the automatic upgrades
+		```sh
+		sudo dpkg-reconfigure --priority=low unatteded-upgrades
+		```
+	- Select "`Yes`" when prompted.
+
+## Configuring Nextcloud
+The Snap package of Nextcloud takes care of a lot of configuration automatically to make it as easy as possible to install and run it. However, certain settings can, or are required to, be configured manually.
+
+### Initial Login
+- Opened the Nextcloud web interface by going to "**http://<instance-public-IP-addr>**".
+- Entered the following details as prompted in the webpage:
+	- [**Reuqired**] Nextcloud Admin credentials (username and password).
+	- [_Optional, automatically set_] Path to store data uploaded by users.
+	- [_Optional, automatically set_] Database Admin credentials (username and password).
