@@ -20,11 +20,9 @@ This is a documentation about how I created a personal Nextcloud instance using 
 	- 24 GB memory
 	- 200 GB storage split into 2 blocks
 
-	Refer to [their website](https://www.oracle.com/cloud/free/) for more details.
+	Referred to [their website](https://www.oracle.com/cloud/free/) for more details.
 
 - Selected the preferred region from the Oracle Cloud web interface.
-
-- Mounted the storage block for storing the uploaded files and data at "_`/var/snap/nextcloud/common/nextcloud/data/`_", the default storage location.
 
 ## Creating Nextcloud Instance
 The sections below describe different stages of creating the Nextcloud instance in sequence as required.
@@ -34,6 +32,41 @@ The sections below describe different stages of creating the Nextcloud instance 
 - Established SSH connection with the instance using [these steps](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/accessinginstance.htm).
 
 ### Preparing Ubuntu Server
+#### Mounting Block Device
+- <ins>**Step 1:**</ins> Listed all available block devices
+	```sh
+	lsblk
+	```
+
+- <ins>**Step 2:**</ins> Formatted block device for usable storage space.
+	```sh
+	sudo fdisk /dev/<block-device-name>
+	```
+	Followed the `fdisk` help menu that's shown using option "`m`".
+
+- <ins>**Step 3:**</ins> Created XFS file-system in the formatted device.
+	- Noted the partiton name of the formatted block device
+		```sh
+		lsblk
+		```
+	- Created file-system using the partition name.
+		```sh
+		sudo mkfs.xfs /dev/<partition-name>
+		```
+
+- <ins>**Step 4:**</ins> Added mounting entry in the "_`/etc/fstab`_" file.
+	```sh
+	sudo cp /etc/fstab /etc/fstab.old
+	echo -e "/dev/<partition-name>\t\t/var/snap/nextcloud/common/nextcloud/data/\t\tdefaults\t0 1" | sudo tee -a /etc/fstab
+	```
+
+- <ins>**Step 5:**</ins> Mounted the block device in the location where Nextcloud stores uploaded data.
+	```sh
+	sudo mkdir -p /var/snap/nextcloud/common/nextcloud/data
+	sudo mount /dev/<partiton-name> /var/snap/nextcloud/common/nextcloud/data
+	lsblk # see mount-points of all block devices
+	```
+
 #### Full System Update
 - Update APT repository.
 	```sh
@@ -124,8 +157,7 @@ The sections below describe different stages of creating the Nextcloud instance 
 	- Allowed ports for SSH, HTTP and HTTPS
 		```sh
 		sudo ufw allow <custom-ssh-port>
-		sudo ufw allow 80/tcp
-		sudo ufw allow 443/tcp
+		sudo ufw allow 80,443/tcp
 		```
 	- Disabled `ping` response
 		- Added the entry below to the file "_`/etc/ufw/before.rules`_" with your preferred text editor.
@@ -142,7 +174,7 @@ The sections below describe different stages of creating the Nextcloud instance 
 		sudo ufw status
 		```
 
-- [Optional] <ins>**Step 5:**</ins> Enable automatic updates for stable packages
+- [_Optional_] <ins>**Step 5:**</ins> Enable automatic updates for stable packages
 	- Installed Unattanded Upgrades pacakge
 		```sh
 		sudo apt install -y unattended-upgrades
@@ -157,7 +189,7 @@ The sections below describe different stages of creating the Nextcloud instance 
 The Snap package of Nextcloud takes care of a lot of configuration automatically to make it as easy as possible to install and run it. However, certain settings can, or are required to, be configured manually.
 
 ### Initial Login
-- Opened the Nextcloud web interface by going to "**http://<instance-public-IP-addr>**".
+- Opened the Nextcloud web interface by going to "**`http://<instance-public-IP-addr>`**".
 - Entered the following details as prompted in the webpage:
 	- [**Reuqired**] Nextcloud Admin credentials (username and password).
 	- [_Optional, automatically set_] Path to store data uploaded by users.
