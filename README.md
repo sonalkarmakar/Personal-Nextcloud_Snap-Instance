@@ -140,7 +140,7 @@ The sections below describe different stages of creating the Nextcloud instance 
 		```
 
 > [!WARNING]  
-> If the SSH configurations are somehow incorrect, you can <font style="color: crimson">**permanently lose access**</font> to the instance.  
+> If the SSH configurations are somehow incorrect, you can <ins style="color: crimson">**permanently lose access**</ins> to the instance.  
 > In case of access loss to compute instance, either create new instance, or consult the Oracle Cloud support and forums for workarounds.  
 
 - <ins>**Step 4:**</ins> Limiting network access
