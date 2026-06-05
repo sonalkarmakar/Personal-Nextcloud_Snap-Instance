@@ -140,7 +140,9 @@ The sections below describe different stages of creating the Nextcloud instance 
 		```
 
 > [!WARNING]  
-> If the SSH configurations are somehow incorrect, you can <ins style="color: crimson">**permanently lose access**</ins> to the instance.  
+> 1. Custom SSH port _**must not** be `80` or `443`_ to avoid HTTPS certificate errors.
+> 2. Incorrect SSH configuration can lead to <ins>**_permanent loss of access_**</ins> to the instance.  
+>   
 > In case of access loss to compute instance, either create new instance, or consult the Oracle Cloud support and forums for workarounds.  
 
 - <ins>**Step 4:**</ins> Limiting network access
@@ -194,3 +196,67 @@ The Snap package of Nextcloud takes care of a lot of configuration automatically
 	- [**Reuqired**] Nextcloud Admin credentials (username and password).
 	- [_Optional, automatically set_] Path to store data uploaded by users.
 	- [_Optional, automatically set_] Database Admin credentials (username and password).
+- Clicked on _Install_ button to start the configuration. Nextcloud home page is opened when the configuration is finished successfully.
+
+### Linking Domain Name
+- <ins>**Step 1:**</ins> Acquired a domain name
+	- Logged in to [Duck DNS](https://duckdns.org).
+	- Created a domain name, taking "_mydomain.duckdns.org_" as example here.
+	- Pointed domain name to the Nextlcoud instance's public IP address.
+
+- <ins>**Step 2:**</ins> Whitelist domain name for accessing Nextcloud.
+	- Ran the whitelisting command below.
+		```sh
+		sudo nextcloud.occ config:system:set trusted_domains <index-number> --value=mydomain.duckdns.org # index-number must be greater than 0
+		```
+	- Verified that the domain name is added.
+		```sh
+		sudo cat /var/snap/nextcloud/current/nextcloud/config/config.php
+		```
+
+> [!IMPORTANT]  
+> - The "`<index-number>`" in the whitelisting command can be anything over 0. Any _existing entries will be overwritten_ for the specified index.
+> - Whitelisting can be also done by adding the domain name in the file "_`/var/snap/nextcloud/current/nextcloud/config/config.php`_".
+> 	```php
+> 	'trusted_domains' => 
+> 	array (
+> 		0 => '13.212.154.88',
+> 		1 => 'mydomain.duckdns.org',
+> 	),
+> 	```
+
+- <ins>**Step 3:**</ins> Verified that Nextcloud is accessible using the doman name at "`http://mydomain.duckdns.org`".
+
+#### Automatic IP address update
+The Oracle Cloud compute instance can have a different IP address if it's shut down and booted up again. Usually, rebooting keeps the same IP address, but this step can address both cases.
+- <ins>**Step 1:**</ins> Logged in to [Duck DNS](https://duckdns.org) website.
+- <ins>**Step 2:**</ins> Opened the [Duck DNS "linux-cron" page](https://www.duckdns.org/install.jsp?tab=linux-cron) and selected domain name.
+- <ins>**Step 3:**</ins> Followed the instruction to create cron job in the page, but used the following cron entry.
+	```sh
+	@reboot ~/duckdns/duck.sh >/dev/null 2>&1
+	```
+- <ins>**Step 4:**</ins> Verified Duck DNS IP address update by running the script manually.
+	```sh
+	bash ~/duckdns/duck.sh
+	```
+
+### Let's Encrypt HTTPS Certification
+> [!IMPORTANT]  
+> **Domain name is mandatory** for HTTPS certification.  
+
+- <ins>**Step 1:**</ins> Switch to root user to avoid permission issues.
+	```sh
+	sudo -i
+	```
+- <ins>**Step 2:**</ins> Run the command to enable Nextcloud HTTPS certification.
+	```sh
+	sudo nextcloud.enable-https lets-encrypt
+	```
+- <ins>**Step 3:**</ins> Enter the **correct** _email address_ and _domain name_ when prompted.
+- <ins>**Step 4:**</ins> Wait for execution completion. Successful execution will get the certification and restart Apache.
+
+## References
+- Full Nextcloud Snap guide.
+- Video guide of simple Nextcloud Snap installation.
+- Video guide of Linux server hardening.
+- Oracle Cloud documentation.
