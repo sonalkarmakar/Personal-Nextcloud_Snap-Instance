@@ -13,6 +13,8 @@ This is a documentation about how I created a personal Nextcloud instance using 
 	- As per user's requirement of cloud storage.
 
 ### Orcale Cloud Account
+![Oracle Cloud Free Tier](./Attachments/oracle_cloud-free_tier.png "Oracle Cloud free tier")  
+
 - Created a Free Oracle Cloud account with it's requirements as documented [here](https://docs.oracle.com/en-us/iaas/Content/GSG/Tasks/signingup_topic-Sign_Up_for_Free_Oracle_Cloud_Promotion.htm).
 
 - The following resources offered by Oracle Cloud free tier are a great fit for this project:
@@ -33,6 +35,8 @@ The sections below describe different stages of creating the Nextcloud instance 
 
 ### Preparing Ubuntu Server
 #### Mounting Block Device
+![Mounting Block Devie](./Attachments/formatting-block-device.png "Mounting Block Device")  
+
 - <ins>**Step 1:**</ins> Listed all available block devices
 	```sh
 	lsblk
@@ -170,11 +174,17 @@ The sections below describe different stages of creating the Nextcloud instance 
 			```sh
 			-A ufw6-before-input -p icmpv6 --icmpv6-type echo-request -j DROP
 			```
-	- Enabled and verify UFW configuration
+		![UFW Disabling IPv4 Ping Response](./Attachments/ufw-ipv4_rules.png "UFW Disabling IPv4 Ping Response")  
+		
+		![UFW Disabling IPv6 Ping Response](./Attachments/ufw-ipv6_rules.png "UFW Disabling IPv6 Ping Response")  
+		
+	- Enabled and verified UFW configuration
 		```sh
 		sudo ufw enable
 		sudo ufw status
 		```
+
+	![UFW Configuration](./Attachments/ufw-configuration.png "UFW Configuration")  
 
 - [_Optional_] <ins>**Step 5:**</ins> Enable automatic updates for stable packages
 	- Installed Unattanded Upgrades pacakge
@@ -186,28 +196,43 @@ The sections below describe different stages of creating the Nextcloud instance 
 		sudo dpkg-reconfigure --priority=low unattended-upgrades
 		```
 	- Select "`Yes`" when prompted.
+	![Automatic Unattended Upgrades confirmation](./Attachments/unattended-upgrades-confirmation.png "Automatic Unattended Upgrades confirmation")
 
 ## Configuring Nextcloud
 The Snap package of Nextcloud takes care of a lot of configuration automatically to make it as easy as possible to install and run it. However, certain settings can, or are required to, be configured manually.
 
 ### Initial Login
+![Nextlcoud Initial Login](./Attachments/nextcloud-initial_setup.png "Nextcloud Initial Login")  
+
+<details>
+<summary>Extra configuration options</summary>
+
+![Nextcloud Initial Setup extra options](./Attachments/nextcloud-extra_config_options.png "Nextcloud Initial Setup extra options")  
+
+</details>
+
 - Opened the Nextcloud web interface by going to "**`http://<instance-public-IP-addr>`**".
 - Entered the following details as prompted in the webpage:
 	- [**Reuqired**] Nextcloud Admin credentials (username and password).
 	- [_Optional, automatically set_] Path to store data uploaded by users.
 	- [_Optional, automatically set_] Database Admin credentials (username and password).
-- Clicked on _Install_ button to start the configuration. Nextcloud home page is opened when the configuration is finished successfully.
+- Clicked on _Install_ button to start the configuration.
+- Chose the preferred apps from the _Recommended apps_ menu and clicked on Install recommended apps button. Password was required to verify.
+	![Nextcloud Applications](./Attachments/nextcloud-choose_apps.png "Nextcloud Applications")  
+
+Nextcloud home page is opened when the configuration and app installation is finished successfully.
 
 ### Linking Domain Name
 - <ins>**Step 1:**</ins> Acquired a domain name
 	- Logged in to [Duck DNS](https://duckdns.org).
-	- Created a domain name, taking "_mydomain.duckdns.org_" as example here.
+	- Created a domain name, taking "_hijinx.duckdns.org_" as example here.
 	- Pointed domain name to the Nextlcoud instance's public IP address.
+	![DuckDNS Domain Name](./Attachments/duckdns-domains.png "DuckDNS Domain Name")
 
 - <ins>**Step 2:**</ins> Whitelist domain name for accessing Nextcloud.
 	- Ran the whitelisting command below.
 		```sh
-		sudo nextcloud.occ config:system:set trusted_domains <index-number> --value=mydomain.duckdns.org # index-number must be greater than 0
+		sudo nextcloud.occ config:system:set trusted_domains <index-number> --value=hijinx.duckdns.org # index-number must be greater than 0
 		```
 	- Verified that the domain name is added.
 		```sh
@@ -221,14 +246,17 @@ The Snap package of Nextcloud takes care of a lot of configuration automatically
 > 	'trusted_domains' => 
 > 	array (
 > 		0 => '13.212.154.88',
-> 		1 => 'mydomain.duckdns.org',
+> 		1 => 'hijinx.duckdns.org',
 > 	),
 > 	```
 
-- <ins>**Step 3:**</ins> Verified that Nextcloud is accessible using the doman name at "`http://mydomain.duckdns.org`".
+- <ins>**Step 3:**</ins> Verified that Nextcloud is accessible using the doman name at "`http://hijinx.duckdns.org`".
 
 #### Automatic IP address update
-The Oracle Cloud compute instance can have a different IP address if it's shut down and booted up again. Usually, rebooting keeps the same IP address, but this step can address both cases.
+Usually, upon rebooting the instance, the public IP address remains unchanged. However, a shut down will cause the instance to be assigned a new IP address when booted up.  
+
+Duck DNS provides numerous methods of automatically updating the IP address for the domain name. Using cron job triggered by reboot to update IP address here.  
+
 - <ins>**Step 1:**</ins> Logged in to [Duck DNS](https://duckdns.org) website.
 - <ins>**Step 2:**</ins> Opened the [Duck DNS "linux-cron" page](https://www.duckdns.org/install.jsp?tab=linux-cron) and selected domain name.
 - <ins>**Step 3:**</ins> Followed the instruction to create cron job in the page, but used the following cron entry.
@@ -242,7 +270,10 @@ The Oracle Cloud compute instance can have a different IP address if it's shut d
 
 ### Let's Encrypt HTTPS Certification
 > [!IMPORTANT]  
-> **Domain name is mandatory** for HTTPS certification.  
+> - **Domain name is mandatory** for HTTPS certification.  
+> - It's possible to get certificate witout `sudo` privileges, but it's inconsistent and can face random issues.  
+
+![Certified HTTPS Connection](./Attachments/https-certified.png "Certified HTTPS Connection")  
 
 - <ins>**Step 1:**</ins> Switch to root user to avoid permission issues.
 	```sh
@@ -254,9 +285,14 @@ The Oracle Cloud compute instance can have a different IP address if it's shut d
 	```
 - <ins>**Step 3:**</ins> Enter the **correct** _email address_ and _domain name_ when prompted.
 - <ins>**Step 4:**</ins> Wait for execution completion. Successful execution will get the certification and restart Apache.
+	![Getting Let's Encrypt Certificate](./Attachments/lets_encrypt-certificate.png "Getting Let's Encrypt Certificate")  
+
+<details>
+<summary>## Screenshots</summary>
+</details>
 
 ## References
-- Full Nextcloud Snap guide.
+- Full documentation of using Nextcloud Snap.
 - Video guide of simple Nextcloud Snap installation.
 - Video guide of Linux server hardening.
 - Oracle Cloud documentation.
