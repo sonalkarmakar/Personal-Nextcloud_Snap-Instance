@@ -13,7 +13,11 @@ This is a documentation about how I created a personal Nextcloud instance using 
 	- As per user's requirement of cloud storage.
 
 ### Orcale Cloud Account
+<center>
+
 ![Oracle Cloud Free Tier](./Attachments/oracle_cloud-free_tier.png "Oracle Cloud free tier")  
+
+</center>
 
 - Created a Free Oracle Cloud account with it's requirements as documented [here](https://docs.oracle.com/en-us/iaas/Content/GSG/Tasks/signingup_topic-Sign_Up_for_Free_Oracle_Cloud_Promotion.htm).
 
@@ -35,7 +39,11 @@ The sections below describe different stages of creating the Nextcloud instance 
 
 ### Preparing Ubuntu Server
 #### Mounting Block Device
+<center>
+
 ![Mounting Block Devie](./Attachments/formatting-block-device.png "Mounting Block Device")  
+
+</center>
 
 - <ins>**Step 1:**</ins> Listed all available block devices
 	```sh
@@ -174,9 +182,17 @@ The sections below describe different stages of creating the Nextcloud instance 
 			```sh
 			-A ufw6-before-input -p icmpv6 --icmpv6-type echo-request -j DROP
 			```
+		<center>
+
 		![UFW Disabling IPv4 Ping Response](./Attachments/ufw-ipv4_rules.png "UFW Disabling IPv4 Ping Response")  
+
+		</center>
 		
+		<center>
+
 		![UFW Disabling IPv6 Ping Response](./Attachments/ufw-ipv6_rules.png "UFW Disabling IPv6 Ping Response")  
+
+		</center>
 		
 	- Enabled and verified UFW configuration
 		```sh
@@ -184,7 +200,11 @@ The sections below describe different stages of creating the Nextcloud instance 
 		sudo ufw status
 		```
 
+	<center>
+
 	![UFW Configuration](./Attachments/ufw-configuration.png "UFW Configuration")  
+
+	</center>
 
 - [_Optional_] <ins>**Step 5:**</ins> Enable automatic updates for stable packages
 	- Installed Unattanded Upgrades pacakge
@@ -196,18 +216,30 @@ The sections below describe different stages of creating the Nextcloud instance 
 		sudo dpkg-reconfigure --priority=low unattended-upgrades
 		```
 	- Select "`Yes`" when prompted.
+	<center>
+
 	![Automatic Unattended Upgrades confirmation](./Attachments/unattended-upgrades-confirmation.png "Automatic Unattended Upgrades confirmation")
+
+	</center>
 
 ## Configuring Nextcloud
 The Snap package of Nextcloud takes care of a lot of configuration automatically to make it as easy as possible to install and run it. However, certain settings can, or are required to, be configured manually.
 
 ### Initial Login
+<center>
+
 ![Nextlcoud Initial Login](./Attachments/nextcloud-initial_setup.png "Nextcloud Initial Login")  
+
+</center>
 
 <details>
 <summary>Extra configuration options</summary>
 
+<center>
+
 ![Nextcloud Initial Setup extra options](./Attachments/nextcloud-extra_config_options.png "Nextcloud Initial Setup extra options")  
+
+</center>
 
 </details>
 
@@ -273,7 +305,11 @@ Duck DNS provides numerous methods of automatically updating the IP address for 
 > - **Domain name is mandatory** for HTTPS certification.  
 > - It's possible to get certificate witout `sudo` privileges, but it's inconsistent and can face random issues.  
 
+<center>
+
 ![Certified HTTPS Connection](./Attachments/https-certified.png "Certified HTTPS Connection")  
+
+</center>
 
 - <ins>**Step 1:**</ins> Switch to root user to avoid permission issues.
 	```sh
@@ -287,9 +323,34 @@ Duck DNS provides numerous methods of automatically updating the IP address for 
 - <ins>**Step 4:**</ins> Wait for execution completion. Successful execution will get the certification and restart Apache.
 	![Getting Let's Encrypt Certificate](./Attachments/lets_encrypt-certificate.png "Getting Let's Encrypt Certificate")  
 
-<details>
-<summary>## Screenshots</summary>
-</details>
+## Screenshots
+- <details>
+	<summary>🔐 Personalised Login Page</summary>
+
+	![Personalised Login Page](./Attachments/custom-login-page.png "Personalised Login Page")
+	
+  </details>
+
+- <details>
+	<summary>🎛️ Customised Dashboard</summary>
+
+	![Customised Dashboard](./Attachments/custom-dashboard.png "Customised Dashboard")
+	
+  </details>
+
+- <details>
+	<summary>🗄️ File Storage</summary>
+
+	![File Storage](./Attachments/stored-files.png "File Storage")
+	
+  </details>
+
+- <details>
+	<summary>⚙️ Settings Menu</summary>
+
+	![Settings Menu](./Attachments/settings-menu.png "Settings Menu")
+	
+  </details>
 
 ## References
 - Full documentation of using Nextcloud Snap.
