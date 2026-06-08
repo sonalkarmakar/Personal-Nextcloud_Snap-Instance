@@ -353,7 +353,7 @@ Duck DNS provides numerous methods of automatically updating the IP address for 
   </details>
 
 ## References
-- Full documentation of using Nextcloud Snap.
-- Video guide of simple Nextcloud Snap installation.
-- Video guide of Linux server hardening.
-- Oracle Cloud documentation.
+- [Full documentation of using Nextcloud Snap](https://github.com/nextcloud-snap/nextcloud-snap/wiki/).
+- [Video guide of simple Nextcloud Snap installation](https://youtu.be/rUQAWvXrtPY).
+- [Video guide of Linux server hardening](https://youtu.be/ZhMw53Ud2tY).
+- [Oracle Cloud documentation](https://docs.oracle.com/en-us/iaas/Content/).
