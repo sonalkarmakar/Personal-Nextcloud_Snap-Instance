@@ -45,7 +45,7 @@ The sections below describe different stages of creating the Nextcloud instance 
 
 </center>
 
-- <ins>**Step 1:**</ins> Listed all available block devices
+- <ins>**Step 1:**</ins> Listed all available block devices and found the one that's not formatted or mounted.
 	```sh
 	lsblk
 	```
@@ -69,14 +69,18 @@ The sections below describe different stages of creating the Nextcloud instance 
 - <ins>**Step 4:**</ins> Added mounting entry in the "_`/etc/fstab`_" file.
 	```sh
 	sudo cp /etc/fstab /etc/fstab.old
-	echo -e "/dev/<partition-name>\t\t/var/snap/nextcloud/common/nextcloud/data/\t\tdefaults\t0 1" | sudo tee -a /etc/fstab
+	echo -e "UUID=$(sudo blkid -s UUID -o value /dev/<partition-name>)\t/var/snap/nextcloud/common/nextcloud/data/\txfs\tdefaults\t\t\t\t0 2" | sudo tee -a /etc/fstab
 	```
+
+> [!WARNING]  
+> **It's not recommended to use _kernel-assigned device names_ for `/etc/fstab` entries**, despite being technically possible.  
+> Device names are _not persistent_, and can change with each boot, causing issues with mounting and system boot-up.  
 
 - <ins>**Step 5:**</ins> Mounted the block device in the location where Nextcloud stores uploaded data.
 	```sh
 	sudo mkdir -p /var/snap/nextcloud/common/nextcloud/data
 	sudo mount /dev/<partiton-name> /var/snap/nextcloud/common/nextcloud/data
-	lsblk # see mount-points of all block devices
+	lsblk -f # see mount-points of all block devices
 	```
 
 #### Full System Update
